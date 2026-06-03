@@ -1,5 +1,4 @@
 import Icon from '../components/Icon'
-import Macros from '../components/Macros'
 import { RecipeRailCard } from './HomeScreen'
 
 function SettingRow({ icon, label, last }) {
@@ -14,7 +13,7 @@ function SettingRow({ icon, label, last }) {
   )
 }
 
-export default function ProfielScreen({ nav, goals, onLogout, recipes, favorites, user }) {
+export default function ProfielScreen({ nav, onLogout, recipes, favorites, user }) {
   const mine = recipes.filter(r => r.user_id === user?.id)
   const favRecipes = recipes.filter(r => favorites.has(r.id))
 
@@ -38,14 +37,6 @@ export default function ProfielScreen({ nav, goals, onLogout, recipes, favorites
               <div className="body" style={{ fontSize: 14 }}>{email}</div>
             </div>
           </div>
-        </div>
-
-        <div style={{ padding: '0 20px 22px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span className="label">Mijn macro-doelen</span>
-            <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, cursor: 'pointer' }}>Wijzig</span>
-          </div>
-          <Macros r={{ kcal: goals.kcal, eiwit: goals.eiwit, vet: goals.vet, kh: goals.kh }} />
         </div>
 
         <div style={{ marginBottom: 22 }}>
@@ -83,7 +74,6 @@ export default function ProfielScreen({ nav, goals, onLogout, recipes, favorites
         <div style={{ padding: '0 20px' }}>
           <div className="label" style={{ marginBottom: 4 }}>Instellingen</div>
           <SettingRow icon="user" label="Account" />
-          <SettingRow icon="gauge" label="Macro-doelen" />
           <SettingRow icon="bookmark" label="Voorkeuren" last />
           <button className="btn btn-ghost btn-block" onClick={onLogout} style={{ marginTop: 18, color: 'var(--danger)' }}>
             Uitloggen

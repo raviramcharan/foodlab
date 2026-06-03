@@ -26,6 +26,18 @@ function RecipeRailCard({ r, onOpen, w = 216, h = 150 }) {
   )
 }
 
+function WebRecipeCard({ r, onOpen }) {
+  return (
+    <div className="wcard" onClick={() => onOpen(r)}>
+      <div className="ph"><Photo src={r.img} name={r.name} /><div className="heart"><Icon name="heart" size={17} sw={2} /></div></div>
+      <div className="bd">
+        <div className="nm">{r.name}</div>
+        <div className="mt"><b>{r.kcal} kcal</b><span>{r.eiwit}g eiwit</span><span>{r.time} min</span></div>
+      </div>
+    </div>
+  )
+}
+
 export function SearchResultRow({ r, onOpen }) {
   return (
     <div onClick={() => onOpen(r)} style={{ display: 'flex', gap: 13, alignItems: 'center', padding: '10px 0', cursor: 'pointer' }}>
@@ -45,8 +57,12 @@ export function SearchResultRow({ r, onOpen }) {
 
 export { RecipeRailCard }
 
-export default function HomeScreen({ nav, recipes, user }) {
-  const [q, setQ] = useState('')
+export default function HomeScreen({ nav, recipes, user, isDesktop, search: externalSearch, setSearch: setExternalSearch }) {
+  const [localQ, setLocalQ] = useState('')
+
+  const q = isDesktop ? (externalSearch ?? '') : localQ
+  const setQ = isDesktop ? (setExternalSearch ?? (() => {})) : setLocalQ
+
   const query = q.trim().toLowerCase()
   const results = query
     ? recipes.filter(r =>
@@ -64,6 +80,38 @@ export default function HomeScreen({ nav, recipes, user }) {
     ? user.user_metadata.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : user?.email?.[0]?.toUpperCase() || 'S'
 
+  const openRecipe = x => nav.go('detail', { id: x.id })
+
+  // ── Desktop layout ──
+  if (isDesktop) {
+    return (
+      <div>
+        {results ? (
+          <>
+            <div className="label" style={{ marginBottom: 10 }}>{results.length} resultaten</div>
+            {results.length === 0 && <div className="body" style={{ padding: '24px 0' }}>Niets gevonden voor "{q}".</div>}
+            <div className="wgrid">{results.map(r => <WebRecipeCard key={r.id} r={r} onOpen={openRecipe} />)}</div>
+          </>
+        ) : (
+          CATEGORIES.map(cat => {
+            const list = recipes.filter(r => r.cat === cat)
+            if (!list.length) return null
+            return (
+              <div key={cat} style={{ marginBottom: 32 }}>
+                <div className="wsec-h">
+                  <h2>{cat}</h2>
+                  <span className="chip" onClick={() => nav.go('filters', { cat })}>Toon meer</span>
+                </div>
+                <div className="wgrid">{list.map(r => <WebRecipeCard key={r.id} r={r} onOpen={openRecipe} />)}</div>
+              </div>
+            )
+          })
+        )}
+      </div>
+    )
+  }
+
+  // ── Mobile layout ──
   return (
     <div className="scroll screen-in" style={{ paddingBottom: 100 }}>
       <div className="topbar" style={{ paddingBottom: 14 }}>
@@ -89,7 +137,7 @@ export default function HomeScreen({ nav, recipes, user }) {
           {results.map((r, i) => (
             <div key={r.id}>
               {i > 0 && <hr className="hr" />}
-              <SearchResultRow r={r} onOpen={x => nav.go('detail', { id: x.id })} />
+              <SearchResultRow r={r} onOpen={openRecipe} />
             </div>
           ))}
         </div>
@@ -111,7 +159,7 @@ export default function HomeScreen({ nav, recipes, user }) {
                 </div>
                 <div className="rail">
                   {list.map(r => (
-                    <RecipeRailCard key={r.id} r={r} onOpen={x => nav.go('detail', { id: x.id })} />
+                    <RecipeRailCard key={r.id} r={r} onOpen={openRecipe} />
                   ))}
                 </div>
               </div>

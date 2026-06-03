@@ -517,3 +517,267 @@ textarea.field { min-height: 70px; }
   transition: transform .12s;
 }
 .round-btn:active { transform: scale(.92); }
+
+/* ══════════════════════════════════════════
+   WEB / DESKTOP RESPONSIVE LAYOUT
+   Applies when viewport ≥ 768 px
+   ══════════════════════════════════════════ */
+
+/* ── Web shell ── */
+.web-shell {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ── Sidebar ── */
+.wside {
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 22px 16px;
+  gap: 6px;
+  width: 236px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.wlogo {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.7px;
+  padding: 4px 10px 16px;
+}
+.wlogo span { color: var(--accent); }
+.wnav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  color: var(--dim);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .14s, background .14s;
+}
+.wnav:hover { background: rgba(255,255,255,.04); }
+.wnav.on {
+  background: rgba(169,224,106,.14);
+  color: var(--accent);
+  font-weight: 700;
+}
+.wnav.on::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 22px;
+  border-radius: 0 4px 4px 0;
+  background: var(--accent);
+}
+.wside .spacer { flex: 1; }
+.wuser-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.wuser-card .av {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Main content area ── */
+.wmain {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.wtop {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 32px;
+  background: rgba(16,20,12,.85);
+  backdrop-filter: blur(16px) saturate(150%);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.wtop-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+}
+.wsearch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 14px;
+  color: var(--faint);
+  min-width: 260px;
+  margin-left: auto;
+}
+.wsearch input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+}
+.wsearch input::placeholder { color: var(--faint); }
+.wmain-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.wmain-scroll::-webkit-scrollbar { width: 8px; }
+.wmain-scroll::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 8px;
+  border: 3px solid var(--bg);
+}
+.wbody { padding: 28px 32px 60px; }
+
+/* ── Recipe grid (desktop home) ── */
+.wsec-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 6px 0 14px;
+}
+.wsec-h h2 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; margin: 0; }
+.wgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.wcard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .16s, border-color .16s;
+}
+.wcard:hover { transform: translateY(-3px); border-color: var(--line-strong); }
+.wcard .ph { position: relative; width: 100%; aspect-ratio: 16/10; }
+.wcard .heart {
+  position: absolute; top: 10px; right: 10px;
+  width: 32px; height: 32px; border-radius: 10px;
+  background: rgba(10,14,7,.5); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; color: #fff;
+}
+.wcard .bd { padding: 12px 14px 14px; }
+.wcard .nm {
+  font-size: 15px; font-weight: 700; letter-spacing: -.2px;
+  line-height: 1.2; height: 2.4em; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.wcard .mt {
+  display: flex; gap: 10px; margin-top: 8px;
+  font-family: var(--mono); font-size: 12px; color: var(--dim);
+}
+.wcard .mt b { color: var(--accent); font-weight: 700; }
+
+/* ── Desktop detail layout ── */
+.wdetail {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) 1.3fr;
+  gap: 32px;
+  align-items: start;
+}
+.wdetail .hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.wcardbox {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--dim);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 18px;
+}
+.back-btn:hover { color: var(--text); }
+.ing-row {
+  display: flex; gap: 14px; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid var(--line);
+}
+.ing-row .amt {
+  font-family: var(--mono); font-size: 13px;
+  color: var(--accent); min-width: 74px;
+}
+.step-row { display: flex; gap: 14px; padding: 13px 0; cursor: pointer; }
+.step-num {
+  width: 30px; height: 30px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2); border: 1px solid var(--line);
+  color: var(--accent); font-family: var(--mono); font-weight: 700; font-size: 13px;
+}
+
+/* ── Desktop filter bar ── */
+.wfilterbar {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 22px;
+}
+
+/* ── Desktop form ── */
+.wform {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.wfield { display: flex; flex-direction: column; gap: 8px; }
+.wfield .label { margin: 0; }
+
+/* ── Desktop profiel ── */
+.wprofiel { max-width: 900px; }
+
+/* ── In desktop context: hide mobile-only chrome ── */
+.web-shell .topbar { display: none; }
+.web-shell .screen { display: block; overflow: visible; }
+.web-shell .scroll {
+  overflow: visible;
+  flex: none;
+  padding-bottom: 0 !important;
+}
