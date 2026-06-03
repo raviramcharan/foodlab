@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Icon from '../components/Icon'
 import Photo from '../components/Photo'
 
-const MEALS = ['Ontbijt', 'Lunch', 'Diner', 'Tussendoor']
+const MEALS = ['Ontbijt', 'Tussendoortje', 'Lunch', 'Diner', 'Tussendoor']
 const DAY_NAMES = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo']
 const DAY_NAMES_FULL = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag']
 const MONTHS = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
