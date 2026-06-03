@@ -95,8 +95,24 @@ html, body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 56px 20px 10px;
+  padding: calc(env(safe-area-inset-top, 44px) + 12px) 20px 10px;
   flex-shrink: 0;
+}
+
+/* ── Screen header (back-button rows) ── */
+.screen-hdr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 44px) + 12px) 20px 12px;
+}
+.screen-hdr-left {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top, 44px) + 12px) 20px 10px;
 }
 
 /* ── Avatar ── */
@@ -336,8 +352,8 @@ html, body {
 /* ── FAB ── */
 .fab {
   position: absolute;
-  bottom: 82px;
-  right: 20px;
+  bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  right: max(20px, env(safe-area-inset-right, 20px));
   width: 58px;
   height: 58px;
   border-radius: 19px;
@@ -357,7 +373,7 @@ html, body {
 /* ── Toast ── */
 .toast {
   position: fixed;
-  bottom: 90px;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent);
@@ -781,3 +797,109 @@ textarea.field { min-height: 70px; }
   flex: none;
   padding-bottom: 0 !important;
 }
+
+/* ── Desktop login ── */
+.login-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg);
+}
+.login-brand {
+  flex: 1;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 64px;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+}
+.login-brand::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(80% 60% at 20% 80%, rgba(169,224,106,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.login-brand-logo {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+.login-brand-logo span { color: var(--accent); }
+.login-brand-tagline {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+.login-brand-sub {
+  color: var(--dim);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 380px;
+}
+.login-brand-features {
+  margin-top: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.login-brand-feat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.login-brand-feat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(169,224,106,.12);
+  border: 1px solid rgba(169,224,106,.22);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.login-form-panel {
+  width: 480px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: 60px 64px;
+}
+
+/* ── Settings panel ── */
+.settings-panel {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.settings-panel-body {
+  padding: 16px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* ── Mobile safe area bottom spacer for bottom sheets ── */
+.bottom-action {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 14px 20px calc(30px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+}
+
+/* ── Week screen desktop scroll ── */
+.wmain-scroll .wbody { overflow-x: hidden; }

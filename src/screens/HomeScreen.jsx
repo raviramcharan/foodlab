@@ -2,16 +2,19 @@ import { useState } from 'react'
 import Icon from '../components/Icon'
 import Photo from '../components/Photo'
 
-const CATEGORIES = ['Ontbijt', 'Lunch', 'Diner', 'Tussendoor']
+const CATEGORIES = ['Ontbijt', 'Lunch', 'Diner', 'Tussendoor', 'Desserts']
 
-function RecipeRailCard({ r, onOpen, w = 216, h = 150 }) {
+function RecipeRailCard({ r, onOpen, w = 216, h = 150, isFav, onToggleFav }) {
   return (
     <div className="rcard" style={{ width: w, height: h }} onClick={() => onOpen(r)}>
       <Photo src={r.img} name={r.name} />
       <div className="scrim" />
       <div style={{ position: 'absolute', top: 10, right: 10 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 11, background: 'rgba(10,14,7,.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-          <Icon name="heart" size={18} sw={2} />
+        <div
+          onClick={e => { e.stopPropagation(); onToggleFav && onToggleFav(r.id) }}
+          style={{ width: 34, height: 34, borderRadius: 11, background: 'rgba(10,14,7,.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: onToggleFav ? 'pointer' : 'default' }}
+        >
+          <Icon name="bookmark" size={17} sw={2} fill={isFav} style={{ color: isFav ? 'var(--accent-bright)' : '#fff' }} />
         </div>
       </div>
       <div className="meta">
@@ -26,10 +29,19 @@ function RecipeRailCard({ r, onOpen, w = 216, h = 150 }) {
   )
 }
 
-function WebRecipeCard({ r, onOpen }) {
+export function WebRecipeCard({ r, onOpen, isFav, onToggleFav }) {
   return (
     <div className="wcard" onClick={() => onOpen(r)}>
-      <div className="ph"><Photo src={r.img} name={r.name} /><div className="heart"><Icon name="heart" size={17} sw={2} /></div></div>
+      <div className="ph">
+        <Photo src={r.img} name={r.name} />
+        <div
+          className="heart"
+          onClick={e => { e.stopPropagation(); onToggleFav && onToggleFav(r.id) }}
+          style={{ cursor: 'pointer', color: isFav ? 'var(--accent)' : 'var(--dim)' }}
+        >
+          <Icon name="bookmark" size={17} sw={2} fill={isFav} />
+        </div>
+      </div>
       <div className="bd">
         <div className="nm">{r.name}</div>
         <div className="mt"><b>{r.kcal} kcal</b><span>{r.eiwit}g eiwit</span><span>{r.time} min</span></div>
@@ -57,7 +69,7 @@ export function SearchResultRow({ r, onOpen }) {
 
 export { RecipeRailCard }
 
-export default function HomeScreen({ nav, recipes, user, isDesktop, search: externalSearch, setSearch: setExternalSearch }) {
+export default function HomeScreen({ nav, recipes, user, isDesktop, search: externalSearch, setSearch: setExternalSearch, favorites, onToggleFav }) {
   const [localQ, setLocalQ] = useState('')
 
   const q = isDesktop ? (externalSearch ?? '') : localQ
@@ -81,6 +93,7 @@ export default function HomeScreen({ nav, recipes, user, isDesktop, search: exte
     : user?.email?.[0]?.toUpperCase() || 'S'
 
   const openRecipe = x => nav.go('detail', { id: x.id })
+  const isFav = id => favorites ? favorites.has(id) : false
 
   // ── Desktop layout ──
   if (isDesktop) {
@@ -90,7 +103,7 @@ export default function HomeScreen({ nav, recipes, user, isDesktop, search: exte
           <>
             <div className="label" style={{ marginBottom: 10 }}>{results.length} resultaten</div>
             {results.length === 0 && <div className="body" style={{ padding: '24px 0' }}>Niets gevonden voor "{q}".</div>}
-            <div className="wgrid">{results.map(r => <WebRecipeCard key={r.id} r={r} onOpen={openRecipe} />)}</div>
+            <div className="wgrid">{results.map(r => <WebRecipeCard key={r.id} r={r} onOpen={openRecipe} isFav={isFav(r.id)} onToggleFav={onToggleFav} />)}</div>
           </>
         ) : (
           CATEGORIES.map(cat => {
@@ -102,7 +115,7 @@ export default function HomeScreen({ nav, recipes, user, isDesktop, search: exte
                   <h2>{cat}</h2>
                   <span className="chip" onClick={() => nav.go('filters', { cat })}>Toon meer</span>
                 </div>
-                <div className="wgrid">{list.map(r => <WebRecipeCard key={r.id} r={r} onOpen={openRecipe} />)}</div>
+                <div className="wgrid">{list.map(r => <WebRecipeCard key={r.id} r={r} onOpen={openRecipe} isFav={isFav(r.id)} onToggleFav={onToggleFav} />)}</div>
               </div>
             )
           })
@@ -159,7 +172,7 @@ export default function HomeScreen({ nav, recipes, user, isDesktop, search: exte
                 </div>
                 <div className="rail">
                   {list.map(r => (
-                    <RecipeRailCard key={r.id} r={r} onOpen={openRecipe} />
+                    <RecipeRailCard key={r.id} r={r} onOpen={openRecipe} isFav={isFav(r.id)} onToggleFav={onToggleFav} />
                   ))}
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import Icon from '../components/Icon'
 
-const CATEGORIES = ['Ontbijt', 'Lunch', 'Diner', 'Tussendoor']
+const CATEGORIES = ['Ontbijt', 'Lunch', 'Diner', 'Tussendoor', 'Desserts']
 const DIETS = ['Vega', 'Veganistisch', 'High-protein', 'Glutenvrij', 'Meal-prep']
 
 function Labeled({ label, children }) {
@@ -25,6 +25,8 @@ export default function AddScreen({ nav, onSave, editRecipe }) {
   const [imgFile, setImgFile] = useState(null)
   const [ings, setIngs] = useState(r.ingredients?.length ? r.ingredients.map(i => ({ amount: i[0], name: i[1] })) : [{ amount: '', name: '' }, { amount: '', name: '' }])
   const [steps, setSteps] = useState(r.steps?.length ? [...r.steps] : [''])
+  const hasMacros = r.kcal || r.eiwit || r.vet || r.kh
+  const [showMacros, setShowMacros] = useState(!!hasMacros)
   const [err, setErr] = useState(false)
   const [saving, setSaving] = useState(false)
   const fileRef = useRef()
@@ -74,7 +76,7 @@ export default function AddScreen({ nav, onSave, editRecipe }) {
 
   return (
     <div className="screen screen-in">
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '56px 20px 12px' }}>
+      <div className="screen-hdr">
         <div className="iconbtn" onClick={() => nav.back()}><Icon name="x" size={20} sw={2.2} /></div>
         <div className="h-sm">{editRecipe ? 'Recept bewerken' : 'Nieuw recept'}</div>
         <button className="btn btn-primary" style={{ padding: '9px 16px', fontSize: 14 }} onClick={save} disabled={saving}>
@@ -120,16 +122,35 @@ export default function AddScreen({ nav, onSave, editRecipe }) {
           </Labeled>
         </div>
 
-        <Labeled label="Macro's (per portie)">
-          <div style={{ display: 'flex', gap: 8 }}>
-            {[['kcal', 'kcal', 'kcal'], ['eiwit', 'g', 'eiwit'], ['vet', 'g', 'vet'], ['kh', 'g', 'koolh.']].map(([k, ph, label]) => (
-              <div key={k} style={{ flex: 1 }}>
-                {macroField(k, ph)}
-                <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--faint)', marginTop: 4 }}>{label}</div>
+        <div>
+          {showMacros ? (
+            <Labeled label="Macro's (per portie)">
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[['kcal', 'kcal', 'kcal'], ['eiwit', 'g', 'eiwit'], ['vet', 'g', 'vet'], ['kh', 'g', 'koolh.']].map(([k, ph, label]) => (
+                  <div key={k} style={{ flex: 1 }}>
+                    {macroField(k, ph)}
+                    <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--faint)', marginTop: 4 }}>{label}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Labeled>
+              <span
+                className="chip"
+                style={{ alignSelf: 'flex-start', fontSize: 12, color: 'var(--faint)' }}
+                onClick={() => { setShowMacros(false); setMacro({ kcal: '', eiwit: '', vet: '', kh: '' }) }}
+              >
+                <Icon name="x" size={14} sw={2} /> Macro's verbergen
+              </span>
+            </Labeled>
+          ) : (
+            <span
+              className="chip"
+              style={{ fontSize: 13 }}
+              onClick={() => setShowMacros(true)}
+            >
+              <Icon name="plus" size={14} sw={2.4} /> Macro's toevoegen
+            </span>
+          )}
+        </div>
 
         <Labeled label="Dieet">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

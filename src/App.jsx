@@ -9,22 +9,28 @@ import AddScreen from './screens/AddScreen'
 import FiltersScreen, { ResultsScreen } from './screens/FiltersScreen'
 import RecommendScreen from './screens/RecommendScreen'
 import ProfielScreen from './screens/ProfielScreen'
+import WeekScreen from './screens/WeekScreen'
 
-const TAB_SCREENS = ['home', 'recommend', 'profiel']
+const TAB_SCREENS = ['home', 'recommend', 'week', 'profiel']
 const NAV = [
   { id: 'home', label: 'Recepten', icon: 'bowl' },
   { id: 'recommend', label: 'Ontdek', icon: 'spark' },
+  { id: 'week', label: 'Weekmenu', icon: 'caldays' },
   { id: 'profiel', label: 'Profiel', icon: 'user' },
 ]
-const TITLES = { home: 'Recepten', recommend: 'Ontdek', profiel: 'Profiel', detail: 'Recept', add: 'Nieuw recept', filters: 'Filters', results: 'Resultaten' }
+const TITLES = {
+  home: 'Recepten', recommend: 'Ontdek', profiel: 'Profiel',
+  week: 'Weekmenu', detail: 'Recept', add: 'Nieuw recept',
+  filters: 'Filters', results: 'Resultaten'
+}
 
 function BottomNav({ current, onTab }) {
   return (
     <div className="nav">
       {NAV.map(n => (
         <div key={n.id} className={'navitem' + (current === n.id ? ' on' : '')} onClick={() => onTab(n.id)}>
-          <Icon name={n.icon} size={23} sw={current === n.id ? 2.1 : 1.8} fill={n.id === 'spark' && current === n.id} />
-          {n.label}
+          <Icon name={n.icon} size={22} sw={current === n.id ? 2.1 : 1.8} fill={n.id === 'spark' && current === n.id} />
+          <span style={{ fontSize: 10 }}>{n.label}</span>
         </div>
       ))}
     </div>
@@ -74,8 +80,8 @@ export default function App() {
   const [recipes, setRecipes] = useState(SEED_RECIPES)
   const [favorites, setFavorites] = useState(new Set())
   const [plan, setPlan] = useState({ Ontbijt: 'r2', Lunch: 'r4', Tussendoor: 'r10' })
+  const [weekPlan, setWeekPlan] = useState({})
   const [toast, setToast] = useState(null)
-  const [dataLoading, setDataLoading] = useState(false)
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 768)
   const [search, setSearch] = useState('')
 
@@ -113,12 +119,12 @@ export default function App() {
   }, [user])
 
   const loadData = async () => {
-    setDataLoading(true)
     try {
+      const today = todayStr()
       const [recipesRes, favsRes, planRes] = await Promise.all([
         supabase.from('recipes').select('*').order('created_at', { ascending: true }),
         supabase.from('favorites').select('recipe_id').eq('user_id', user.id),
-        supabase.from('day_plans').select('*').eq('user_id', user.id).eq('date', todayStr()),
+        supabase.from('day_plans').select('*').eq('user_id', user.id).eq('date', today),
       ])
       if (recipesRes.data) setRecipes(recipesRes.data.map(normalizeRecipe))
       if (favsRes.data) setFavorites(new Set(favsRes.data.map(f => f.recipe_id)))
@@ -130,7 +136,6 @@ export default function App() {
     } catch (err) {
       console.error('loadData error', err)
     }
-    setDataLoading(false)
   }
 
   const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -159,24 +164,33 @@ export default function App() {
     const newPlan = { ...plan, [r.cat]: r.id }
     setPlan(newPlan)
     showToast('Toegevoegd aan ' + r.cat.toLowerCase())
-    if (user) {
+    const hasCredentials = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('placeholder')
+    if (user && hasCredentials) {
       await supabase.from('day_plans').upsert({ user_id: user.id, date: todayStr(), meal: r.cat, recipe_id: r.id })
     }
   }
 
-  const onPlanChange = async (newPlan) => {
-    const removed = Object.keys(plan).filter(meal => !newPlan[meal])
-    setPlan(newPlan)
-    if (user) {
-      for (const meal of removed) {
-        await supabase.from('day_plans').delete().eq('user_id', user.id).eq('date', todayStr()).eq('meal', meal)
+  const onWeekPlanChange = async (newWeekPlan) => {
+    setWeekPlan(newWeekPlan)
+    const hasCredentials = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('placeholder')
+    if (user && hasCredentials) {
+      for (const [dateStr, dayPlan] of Object.entries(newWeekPlan)) {
+        for (const [meal, recipeId] of Object.entries(dayPlan)) {
+          if (recipeId) {
+            await supabase.from('day_plans').upsert({ user_id: user.id, date: dateStr, meal, recipe_id: recipeId })
+          } else {
+            await supabase.from('day_plans').delete().eq('user_id', user.id).eq('date', dateStr).eq('meal', meal)
+          }
+        }
       }
     }
   }
 
   const onSaveRecipe = async (rec, imgFile) => {
     let imgUrl = rec.img
-    if (imgFile && user) {
+    const hasCredentials = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('placeholder')
+
+    if (imgFile && user && hasCredentials) {
       const ext = imgFile.name.split('.').pop()
       const path = `${user.id}/${rec.id}.${ext}`
       const { data } = await supabase.storage.from('recipe-images').upload(path, imgFile, { upsert: true })
@@ -193,27 +207,50 @@ export default function App() {
       tags: rec.tags, ingredients: rec.ingredients, steps: rec.steps,
     }
 
-    const { data, error } = await supabase.from('recipes').upsert(row).select().single()
-    if (data) {
+    if (hasCredentials) {
+      const { data, error } = await supabase.from('recipes').upsert(row).select().single()
+      if (data) {
+        setRecipes(prev => {
+          const idx = prev.findIndex(r => r.id === data.id)
+          const normalized = normalizeRecipe(data)
+          if (idx >= 0) return prev.map(r => r.id === data.id ? normalized : r)
+          return [normalized, ...prev]
+        })
+      }
+      if (!error) { nav.tab('home'); showToast('Recept opgeslagen') }
+    } else {
+      const normalized = normalizeRecipe({ ...row, img: imgUrl })
       setRecipes(prev => {
-        const idx = prev.findIndex(r => r.id === data.id)
-        const normalized = normalizeRecipe(data)
-        if (idx >= 0) return prev.map(r => r.id === data.id ? normalized : r)
+        const idx = prev.findIndex(r => r.id === normalized.id)
+        if (idx >= 0) return prev.map(r => r.id === normalized.id ? normalized : r)
         return [normalized, ...prev]
       })
+      nav.tab('home')
+      showToast('Recept opgeslagen')
     }
-    if (!error) { nav.tab('home'); showToast('Recept opgeslagen') }
+  }
+
+  const onDeleteRecipe = async (recipeId) => {
+    setRecipes(prev => prev.filter(r => r.id !== recipeId))
+    setFavorites(prev => { const next = new Set(prev); next.delete(recipeId); return next })
+    const hasCredentials = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('placeholder')
+    if (user && hasCredentials) {
+      await supabase.from('recipes').delete().eq('id', recipeId).eq('user_id', user.id)
+    }
+    nav.back()
+    showToast('Recept verwijderd')
   }
 
   const onToggleFav = async (recipeId) => {
     const isFav = favorites.has(recipeId)
     const next = new Set(favorites)
+    const hasCredentials = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('placeholder')
     if (isFav) {
       next.delete(recipeId)
-      if (user) await supabase.from('favorites').delete().eq('user_id', user.id).eq('recipe_id', recipeId)
+      if (user && hasCredentials) await supabase.from('favorites').delete().eq('user_id', user.id).eq('recipe_id', recipeId)
     } else {
       next.add(recipeId)
-      if (user) await supabase.from('favorites').insert({ user_id: user.id, recipe_id: recipeId })
+      if (user && hasCredentials) await supabase.from('favorites').insert({ user_id: user.id, recipe_id: recipeId })
       showToast('Bewaard')
     }
     setFavorites(next)
@@ -223,6 +260,7 @@ export default function App() {
     await supabase.auth.signOut()
     setStack([{ screen: 'home', params: {} }])
     setPlan({})
+    setWeekPlan({})
     setFavorites(new Set())
   }
 
@@ -246,16 +284,41 @@ export default function App() {
     nav.tab('home')
   }
 
+  // Desktop login
+  if (isDesktop && !user) {
+    return (
+      <LoginScreen
+        isDesktop
+        onAuth={hasCredentials ? () => {} : onDemoAuth}
+        demoMode={!hasCredentials}
+      />
+    )
+  }
+
   let body
   if (!user) {
     body = <LoginScreen onAuth={hasCredentials ? () => {} : onDemoAuth} demoMode={!hasCredentials} />
   } else {
     switch (cur.screen) {
       case 'home':
-        body = <HomeScreen key="home" nav={nav} recipes={recipes} user={user} isDesktop={isDesktop} search={search} setSearch={setSearch} />
+        body = <HomeScreen key="home" nav={nav} recipes={recipes} user={user} isDesktop={isDesktop} search={search} setSearch={setSearch} favorites={favorites} onToggleFav={onToggleFav} />
         break
       case 'detail':
-        body = <DetailScreen key={cur.params.id} nav={nav} params={cur.params} recipes={recipes} onAddToPlan={onAddToPlan} favorites={favorites} onToggleFav={onToggleFav} isDesktop={isDesktop} />
+        body = (
+          <DetailScreen
+            key={cur.params.id}
+            nav={nav}
+            params={cur.params}
+            recipes={recipes}
+            onAddToPlan={onAddToPlan}
+            favorites={favorites}
+            onToggleFav={onToggleFav}
+            isDesktop={isDesktop}
+            user={user}
+            onEdit={r => nav.go('add', { recipe: r })}
+            onDelete={onDeleteRecipe}
+          />
+        )
         break
       case 'add':
         body = <AddScreen key="add" nav={nav} onSave={onSaveRecipe} editRecipe={cur.params.recipe} isDesktop={isDesktop} />
@@ -264,16 +327,19 @@ export default function App() {
         body = <FiltersScreen key="filters" nav={nav} params={cur.params} recipes={recipes} />
         break
       case 'results':
-        body = <ResultsScreen key="results" nav={nav} params={cur.params} recipes={recipes} />
+        body = <ResultsScreen key="results" nav={nav} params={cur.params} recipes={recipes} isDesktop={isDesktop} favorites={favorites} onToggleFav={onToggleFav} />
         break
       case 'recommend':
-        body = <RecommendScreen key="recommend" nav={nav} recipes={recipes} onSaveRecipe={r => { onToggleFav(r.id) }} />
+        body = <RecommendScreen key="recommend" nav={nav} recipes={recipes} onSaveRecipe={r => onToggleFav(r.id)} isDesktop={isDesktop} />
+        break
+      case 'week':
+        body = <WeekScreen key="week" nav={nav} recipes={recipes} weekPlan={weekPlan} onWeekPlanChange={onWeekPlanChange} isDesktop={isDesktop} />
         break
       case 'profiel':
         body = <ProfielScreen key="profiel" nav={nav} onLogout={onLogout} recipes={recipes} favorites={favorites} user={user} />
         break
       default:
-        body = <HomeScreen nav={nav} recipes={recipes} user={user} isDesktop={isDesktop} search={search} setSearch={setSearch} />
+        body = <HomeScreen nav={nav} recipes={recipes} user={user} isDesktop={isDesktop} search={search} setSearch={setSearch} favorites={favorites} onToggleFav={onToggleFav} />
     }
   }
 

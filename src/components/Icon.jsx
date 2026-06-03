@@ -1,49 +1,66 @@
-const ICONS = {
-  search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-3.2-3.2',
-  sliders: 'M4 7h10M18 7h2M4 17h2M10 17h10M14 5v4M8 15v4',
-  back: 'M15 5l-7 7 7 7',
-  fwd: 'M9 5l7 7-7 7',
-  plus: 'M12 5v14M5 12h14',
-  minus: 'M5 12h14',
-  clock: 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z',
-  heart: 'M12 20s-7-4.5-9.5-9C1 8 2.5 4.5 6 4.5c2 0 3 1.2 3.8 2.3.8-1.1 1.8-2.3 3.8-2.3 3.5 0 5 3.5 3.5 6.5C19 15.5 12 20 12 20Z',
-  cal: 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4',
-  bowl: 'M3 11h18a9 9 0 0 1-18 0ZM7 11c0-3 2-5 5-5s5 2 5 5M12 3v1',
-  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 21c0-3.5 3-6 7-6s7 2.5 7 6',
-  check: 'M5 12.5l4.5 4.5L19 7',
-  x: 'M6 6l12 12M18 6L6 18',
-  flame: 'M12 3c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1-.5-2-1-3 .2 2-1 3-2 3 .5-3-1-6-3-7ZM10 21h4',
-  star: 'M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 16.8 6.7 19.6l1.1-6L3.4 9.4l6-.8L12 3Z',
-  spark: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3ZM18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8L18 15Z',
-  bookmark: 'M6 4h12v17l-6-4-6 4V4Z',
-  camera: 'M4 8h3l1.5-2h7L17 8h3v12H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z',
-  mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
-  share: 'M12 15V4M12 4L8 8M12 4l4 4M5 12v7h14v-7',
-  edit: 'M4 20h4L19 9l-4-4L4 16v4ZM14 6l4 4',
-  trash: 'M5 7h14M9 7V5h6v2M6 7l1 13h10l1-13',
-  users: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM2 20c0-3 2.5-5 7-5M16 11a3 3 0 1 0 0-6M22 20c0-2.5-1.8-4.4-5-4.8',
-  gauge: 'M5 18a9 9 0 1 1 14 0M12 14l4-4',
-  apple: 'M16 13c0-2 1.5-3 1.6-3-.9-1.3-2.3-1.5-2.8-1.5-1.2-.1-2.3.7-2.9.7-.6 0-1.5-.7-2.5-.7C6.4 8.5 5 9.9 5 12.6 5 15.3 7 18 8.4 18c.6 0 1.1-.5 2.1-.5s1.4.5 2.2.5c1.4 0 2.6-2.2 3-3.2-1.6-.6-1.7-2.6-1.7-1.8ZM13.5 7c.6-.7.9-1.7.8-2.5-.8.05-1.7.5-2.2 1.2-.5.6-.9 1.6-.7 2.4.8.05 1.6-.4 2.1-1.1Z',
-  google: 'M21 12.2c0-.7-.1-1.3-.2-1.9H12v3.7h5c-.2 1.2-.9 2.2-1.9 2.9v2.4h3.1c1.8-1.7 2.8-4.1 2.8-7.1ZM12 21c2.5 0 4.6-.8 6.2-2.2l-3.1-2.4c-.8.6-1.9 1-3.1 1-2.4 0-4.4-1.6-5.1-3.8H3.7v2.5C5.3 19 8.4 21 12 21ZM6.9 13.6c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9V7.3H3.7C3.2 8.7 3 10.3 3 12s.3 3.3.7 4.7l3.2-3.1ZM12 6.4c1.3 0 2.5.5 3.5 1.4l2.6-2.6C16.5 3.7 14.5 3 12 3 8.4 3 5.3 5 3.7 7.9l3.2 2.5C7.6 8 9.6 6.4 12 6.4Z',
-  dot: 'M12 12h.01',
+import {
+  Search, SlidersHorizontal, ChevronLeft, ChevronRight, Plus, Minus,
+  Clock, Heart, Calendar, CalendarDays, ChefHat, User, Check, X, Flame, Star,
+  Sparkles, Bookmark, Camera, Mail, Upload, Pencil, Trash2, Users,
+  Gauge, Apple, Dot, Lock, Bell, Palette, Globe, LayoutGrid,
+} from 'lucide-react'
+
+const MAP = {
+  search: Search,
+  sliders: SlidersHorizontal,
+  back: ChevronLeft,
+  fwd: ChevronRight,
+  plus: Plus,
+  minus: Minus,
+  clock: Clock,
+  heart: Heart,
+  cal: Calendar,
+  caldays: CalendarDays,
+  bowl: ChefHat,
+  user: User,
+  check: Check,
+  x: X,
+  flame: Flame,
+  star: Star,
+  spark: Sparkles,
+  bookmark: Bookmark,
+  camera: Camera,
+  mail: Mail,
+  share: Upload,
+  edit: Pencil,
+  trash: Trash2,
+  users: Users,
+  gauge: Gauge,
+  apple: Apple,
+  dot: Dot,
+  lock: Lock,
+  bell: Bell,
+  palette: Palette,
+  globe: Globe,
+  grid: LayoutGrid,
 }
 
 export default function Icon({ name, size = 22, sw = 1.8, fill = false, style, className }) {
-  const d = ICONS[name] || ICONS.dot
+  const LucideIcon = MAP[name]
+  if (!LucideIcon) return null
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
+    <LucideIcon
+      size={size}
+      strokeWidth={fill ? 0 : sw}
       fill={fill ? 'currentColor' : 'none'}
-      stroke={fill ? 'none' : 'currentColor'}
-      strokeWidth={sw}
-      strokeLinecap="round"
-      strokeLinejoin="round"
       style={{ display: 'block', flexShrink: 0, ...style }}
       className={className}
-    >
-      <path d={d} />
+    />
+  )
+}
+
+export function GoogleLogo({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block', flexShrink: 0 }}>
+      <path fill="#4285F4" d="M23.745 12.27c0-.79-.07-1.54-.19-2.27h-11.3v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/>
+      <path fill="#34A853" d="M12.255 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96h-3.98v3.09C3.515 21.3 7.615 24 12.255 24z"/>
+      <path fill="#FBBC05" d="M5.525 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62h-3.98a11.86 11.86 0 0 0 0 10.76l3.98-3.09z"/>
+      <path fill="#EA4335" d="M12.255 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C18.205 1.19 15.495 0 12.255 0c-4.64 0-8.74 2.7-10.71 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/>
     </svg>
   )
 }

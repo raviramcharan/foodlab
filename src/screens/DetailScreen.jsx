@@ -25,13 +25,15 @@ function GlassRound({ children, onClick }) {
   )
 }
 
-export default function DetailScreen({ nav, params, recipes, onAddToPlan, favorites, onToggleFav }) {
+export default function DetailScreen({ nav, params, recipes, onAddToPlan, favorites, onToggleFav, user, onEdit, onDelete, isDesktop }) {
   const r = recipes.find(x => x.id === params.id) || recipes[0]
   const [servings, setServings] = useState(r?.servings || 1)
   const [done, setDone] = useState({})
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const factor = r ? servings / r.servings : 1
   const similar = recipes.filter(x => x.cat === r?.cat && x.id !== r?.id).slice(0, 4)
-  const isFav = favorites.has(r?.id)
+  const isFav = favorites ? favorites.has(r?.id) : false
+  const isOwner = user && r && user.id === r.user_id
 
   if (!r) return null
 
@@ -44,18 +46,36 @@ export default function DetailScreen({ nav, params, recipes, onAddToPlan, favori
     </div>
   )
 
+  const handleDelete = () => {
+    if (confirmDelete) {
+      onDelete && onDelete(r.id)
+    } else {
+      setConfirmDelete(true)
+      setTimeout(() => setConfirmDelete(false), 3000)
+    }
+  }
+
   return (
     <div className="screen screen-in">
       <div className="scroll" style={{ paddingBottom: 108 }}>
         <div style={{ position: 'relative', height: 288, flexShrink: 0 }}>
           <Photo src={r.img} name={r.name} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(7,10,5,.4) 0%, rgba(7,10,5,0) 28%, rgba(16,20,12,.2) 72%, var(--bg) 100%)' }} />
-          <div style={{ position: 'absolute', top: 56, left: 16, right: 16, display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top, 44px) + 12px)', left: 16, right: 16, display: 'flex', justifyContent: 'space-between' }}>
             <GlassRound onClick={() => nav.back()}><Icon name="back" size={19} sw={2.2} /></GlassRound>
             <div style={{ display: 'flex', gap: 10 }}>
-              <GlassRound onClick={() => {}}><Icon name="share" size={18} sw={2} /></GlassRound>
+              {isOwner && (
+                <>
+                  <GlassRound onClick={() => onEdit && onEdit(r)}>
+                    <Icon name="edit" size={17} sw={2} />
+                  </GlassRound>
+                  <GlassRound onClick={handleDelete}>
+                    <Icon name="trash" size={17} sw={2} style={{ color: confirmDelete ? 'var(--danger)' : '#fff' }} />
+                  </GlassRound>
+                </>
+              )}
               <GlassRound onClick={() => onToggleFav(r.id)}>
-                <Icon name="heart" size={19} sw={2} fill={isFav} style={{ color: isFav ? 'var(--accent-bright)' : '#fff' }} />
+                <Icon name="bookmark" size={18} sw={2} fill={isFav} style={{ color: isFav ? 'var(--accent-bright)' : '#fff' }} />
               </GlassRound>
             </div>
           </div>
@@ -67,6 +87,9 @@ export default function DetailScreen({ nav, params, recipes, onAddToPlan, favori
             {(r.tags || []).slice(0, 2).map(t => (
               <span key={t} className="chip" style={{ padding: '5px 11px', fontSize: 12.5 }}>{t}</span>
             ))}
+            {isOwner && (
+              <span className="chip" style={{ padding: '5px 11px', fontSize: 12.5, color: 'var(--accent)', borderColor: 'rgba(169,224,106,.3)' }}>Mijn recept</span>
+            )}
           </div>
           <div className="h-lg" style={{ fontSize: 26, marginBottom: 10 }}>{r.name}</div>
           <MetaRow r={{ ...r, servings }} />
@@ -117,12 +140,31 @@ export default function DetailScreen({ nav, params, recipes, onAddToPlan, favori
             </div>
           </div>
 
+          {isOwner && (
+            <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
+              <button
+                className="btn btn-ghost"
+                style={{ flex: 1 }}
+                onClick={() => onEdit && onEdit(r)}
+              >
+                <Icon name="edit" size={17} sw={2} /> Bewerken
+              </button>
+              <button
+                className="btn btn-ghost"
+                style={{ flex: 1, color: confirmDelete ? 'var(--danger)' : 'var(--text)' }}
+                onClick={handleDelete}
+              >
+                <Icon name="trash" size={17} sw={2} /> {confirmDelete ? 'Zeker weten?' : 'Verwijderen'}
+              </button>
+            </div>
+          )}
+
           {similar.length > 0 && (
             <div style={{ marginTop: 28, marginLeft: -20, marginRight: -20 }}>
               <div className="h-md" style={{ padding: '0 20px 12px' }}>Vergelijkbare recepten</div>
               <div className="rail">
                 {similar.map(s => (
-                  <RecipeRailCard key={s.id} r={s} onOpen={x => nav.go('detail', { id: x.id })} w={172} h={124} />
+                  <RecipeRailCard key={s.id} r={s} onOpen={x => nav.go('detail', { id: x.id })} w={172} h={124} isFav={favorites ? favorites.has(s.id) : false} onToggleFav={onToggleFav} />
                 ))}
               </div>
             </div>
@@ -130,7 +172,7 @@ export default function DetailScreen({ nav, params, recipes, onAddToPlan, favori
         </div>
       </div>
 
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '14px 20px 30px', background: 'linear-gradient(to top, var(--bg) 60%, transparent)' }}>
+      <div className="bottom-action">
         <button className="btn btn-primary btn-block" onClick={() => onAddToPlan(r)}>
           <Icon name="cal" size={19} sw={2} /> Toevoegen aan dagschema
         </button>

@@ -15,7 +15,68 @@ function matchReason(r) {
   return 'Past bij je doel'
 }
 
-export default function RecommendScreen({ nav, recipes, onSaveRecipe }) {
+function DesktopRecommend({ nav, recipes, onSaveRecipe }) {
+  const [saved, setSaved] = useState(new Set())
+
+  const handleSave = (r) => {
+    const next = new Set(saved)
+    if (next.has(r.id)) { next.delete(r.id) } else { next.add(r.id); onSaveRecipe(r) }
+    setSaved(next)
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 20 }}>
+        <div className="label" style={{ marginBottom: 4 }}>Op basis van je doel · high-protein</div>
+        <div style={{ color: 'var(--dim)', fontSize: 14 }}>Selecteer recepten om op te slaan in je favorieten.</div>
+      </div>
+      <div className="wgrid">
+        {recipes.map(r => {
+          const pct = matchPct(r)
+          const reason = matchReason(r)
+          const isSaved = saved.has(r.id)
+          return (
+            <div key={r.id} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 18, overflow: 'hidden', transition: 'transform .16s, border-color .16s' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = ''}
+            >
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '16/10', cursor: 'pointer' }} onClick={() => nav.go('detail', { id: r.id })}>
+                <Photo src={r.img} name={r.name} />
+                <div style={{ position: 'absolute', top: 10, left: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(10,14,7,.6)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,.14)', borderRadius: 999, padding: '4px 10px', fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: 'var(--accent-bright)' }}>
+                    <Icon name="spark" size={13} fill style={{ color: 'var(--accent-bright)' }} /> {pct}% match
+                  </div>
+                </div>
+              </div>
+              <div style={{ padding: '12px 14px 14px' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-.2px', lineHeight: 1.2, marginBottom: 6 }}>{r.name}</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 12, fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--dim)' }}>
+                  <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{r.kcal} kcal</span>
+                  <span>{r.eiwit}g eiwit</span>
+                  <span>{r.time} min</span>
+                </div>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+                  <span className="chip on" style={{ fontSize: 11, padding: '3px 8px' }}>{reason}</span>
+                  <span className="chip" style={{ fontSize: 11, padding: '3px 8px' }}>{r.cat}</span>
+                </div>
+                <button
+                  className={'btn btn-block ' + (isSaved ? 'btn-ghost' : 'btn-primary')}
+                  style={{ fontSize: 14, padding: '10px 14px' }}
+                  onClick={() => handleSave(r)}
+                >
+                  <Icon name="bookmark" size={16} sw={2} fill={isSaved} />
+                  {isSaved ? 'Opgeslagen' : 'Bewaren'}
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export default function RecommendScreen({ nav, recipes, onSaveRecipe, isDesktop }) {
   const deck = useRef(null)
   if (!deck.current) deck.current = [...recipes].sort(() => Math.random() - 0.5)
   const list = deck.current
@@ -41,6 +102,10 @@ export default function RecommendScreen({ nav, recipes, onSaveRecipe }) {
     start.current = null
     if (Math.abs(d) > 95) advance(d > 0 ? 1 : -1)
     else { setAnim(true); setDx(0); setTimeout(() => setAnim(false), 200) }
+  }
+
+  if (isDesktop) {
+    return <DesktopRecommend nav={nav} recipes={list} onSaveRecipe={onSaveRecipe} />
   }
 
   const done = i >= list.length
@@ -112,7 +177,7 @@ export default function RecommendScreen({ nav, recipes, onSaveRecipe }) {
           <div style={{ display: 'flex', justifyContent: 'center', gap: 26, padding: '14px 0 26px', alignItems: 'center' }}>
             <div className="round-btn" style={{ color: 'var(--danger)' }} onClick={() => advance(-1)}><Icon name="x" size={26} sw={2.6} /></div>
             <div className="round-btn" onClick={() => nav.go('detail', { id: list[i].id })} style={{ width: 48, height: 48, color: 'var(--dim)' }}><Icon name="search" size={20} /></div>
-            <div className="round-btn" style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }} onClick={() => advance(1)}><Icon name="heart" size={26} sw={2.4} fill /></div>
+            <div className="round-btn" style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }} onClick={() => advance(1)}><Icon name="bookmark" size={26} sw={2.4} fill /></div>
           </div>
         </>
       )}
